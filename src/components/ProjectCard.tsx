@@ -15,7 +15,7 @@ export default function ProjectCard({ project, priority = false }: { project: Pr
           src={project.screenshot}
           alt={`Screenshot of ${project.name}`}
           fill
-          className={`object-cover ${project.comingSoon ? "opacity-80" : ""}`}
+          className={`object-cover ${project.comingSoon ? "opacity-90" : ""}`}
           sizes="(max-width: 768px) 100vw, 50vw"
           priority={priority}
         />
