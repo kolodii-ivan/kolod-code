@@ -26,10 +26,10 @@ export default function Hero() {
 
         <h1 className="font-mono text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight">
           <span className="text-light-text">Kolod</span>
-          <span className="bg-gradient-to-r from-clay to-terminal-green bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-clay to-terminal-green bg-clip-text text-transparent pr-1">
             {" "}Code
           </span>
-          <span className="cursor-blink text-terminal-green">_</span>
+          <span className="cursor-blink text-terminal-green ml-[-2px]">_</span>
         </h1>
 
         <p className="mt-8 font-sans text-lg md:text-xl text-light-text/50 max-w-lg mx-auto leading-relaxed">
