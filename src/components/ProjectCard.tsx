@@ -3,20 +3,41 @@ import { Project } from "@/data/projects";
 
 export default function ProjectCard({ project }: { project: Project }) {
   return (
-    <article className="bg-white rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden">
+    <article
+      className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 ${
+        project.comingSoon
+          ? "opacity-75"
+          : "hover:shadow-lg hover:-translate-y-1"
+      }`}
+    >
       <div className="relative aspect-video bg-charcoal/5">
-        <Image
-          src={project.screenshot}
-          alt={`Screenshot of ${project.name}`}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
+        {project.comingSoon ? (
+          <div className="absolute inset-0 bg-charcoal flex items-center justify-center">
+            <span className="font-mono text-light-text/40 text-lg">
+              {project.name}
+            </span>
+          </div>
+        ) : (
+          <Image
+            src={project.screenshot}
+            alt={`Screenshot of ${project.name}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        )}
       </div>
       <div className="p-6">
-        <h3 className="font-mono text-xl font-semibold text-dark-text">
-          {project.name}
-        </h3>
+        <div className="flex items-center gap-3">
+          <h3 className="font-mono text-xl font-semibold text-dark-text">
+            {project.name}
+          </h3>
+          {project.comingSoon && (
+            <span className="font-mono text-xs bg-clay/15 text-clay px-2 py-0.5 rounded">
+              Coming Soon
+            </span>
+          )}
+        </div>
         <p className="mt-2 font-sans text-sm text-dark-text/70 leading-relaxed">
           {project.description}
         </p>
@@ -30,14 +51,20 @@ export default function ProjectCard({ project }: { project: Project }) {
             </span>
           ))}
         </div>
-        <a
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 inline-block font-mono text-sm text-clay hover:text-clay/80 transition-colors"
-        >
-          &gt; open project
-        </a>
+        {project.url ? (
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-block font-mono text-sm text-clay hover:text-clay/80 transition-colors"
+          >
+            &gt; open project
+          </a>
+        ) : (
+          <span className="mt-4 inline-block font-mono text-sm text-dark-text/30">
+            &gt; coming soon
+          </span>
+        )}
       </div>
     </article>
   );

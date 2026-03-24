@@ -2,9 +2,10 @@ export interface Project {
   name: string;
   slug: string;
   description: string;
-  url: string;
+  url?: string;
   screenshot: string;
   techStack: string[];
+  comingSoon?: boolean;
 }
 
 export const projects: Project[] = [
@@ -34,5 +35,32 @@ export const projects: Project[] = [
     url: "https://yana.ikolodiy.com/",
     screenshot: "/screenshots/yana.png",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS"],
+  },
+  {
+    name: "Roads Quality",
+    slug: "roads-quality",
+    description:
+      "Data aggregation platform for analyzing road quality across Ukrainian oblast capitals. Interactive maps, city comparisons, contractor rankings, and 8 integrated data sources.",
+    screenshot: "/screenshots/roads-quality.svg",
+    techStack: ["React", "FastAPI", "PostGIS", "Celery"],
+    comingSoon: true,
+  },
+  {
+    name: "SMM Desk",
+    slug: "smm-desk",
+    description:
+      "AI-powered social media management platform. Draft, generate, and optimize content across X, LinkedIn, Facebook, Telegram, and more with dual LLM support and trend intelligence.",
+    screenshot: "/screenshots/smm-desk.svg",
+    techStack: ["Angular", "NestJS", "Claude API", "Gemini"],
+    comingSoon: true,
+  },
+  {
+    name: "Investment Desk",
+    slug: "inv-desk",
+    description:
+      "Personal investment analysis tool with AI-powered research, tax optimization insights, and leverage analysis for building and managing investment portfolios.",
+    screenshot: "/screenshots/inv-desk.svg",
+    techStack: ["React", "Express", "SQLite", "Claude API"],
+    comingSoon: true,
   },
 ];

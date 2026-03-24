@@ -13,12 +13,14 @@ function JsonLd() {
       "Portfolio of web applications crafted with Claude Code by Ivan Kolodii.",
     mainEntity: {
       "@type": "ItemList",
-      itemListElement: projects.map((project, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        name: project.name,
-        url: project.url,
-      })),
+      itemListElement: projects
+        .filter((p) => p.url)
+        .map((project, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: project.name,
+          url: project.url,
+        })),
     },
   };
 
