@@ -1,0 +1,8 @@
+[     548ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8000/api/v1/cities:0
+[     549ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8000/api/v1/cities:0
+[    2027ms] [ERROR] ct @ http://localhost:5175/node_modules/.vite/deps/maplibre-gl.js?v=795b81ab:482
+[    2027ms] [ERROR] ct @ http://localhost:5175/node_modules/.vite/deps/maplibre-gl.js?v=795b81ab:482
+[    2027ms] [ERROR] ct @ http://localhost:5175/node_modules/.vite/deps/maplibre-gl.js?v=795b81ab:482
+[    2027ms] [ERROR] ct @ http://localhost:5175/node_modules/.vite/deps/maplibre-gl.js?v=795b81ab:482
+[    2027ms] [ERROR] ct @ http://localhost:5175/node_modules/.vite/deps/maplibre-gl.js?v=795b81ab:482
+[    2027ms] [ERROR] ct @ http://localhost:5175/node_modules/.vite/deps/maplibre-gl.js?v=795b81ab:482

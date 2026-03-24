@@ -11,21 +11,13 @@ export default function ProjectCard({ project }: { project: Project }) {
       }`}
     >
       <div className="relative aspect-video bg-charcoal/5">
-        {project.comingSoon ? (
-          <div className="absolute inset-0 bg-charcoal flex items-center justify-center">
-            <span className="font-mono text-light-text/40 text-lg">
-              {project.name}
-            </span>
-          </div>
-        ) : (
-          <Image
-            src={project.screenshot}
-            alt={`Screenshot of ${project.name}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
-        )}
+        <Image
+          src={project.screenshot}
+          alt={`Screenshot of ${project.name}`}
+          fill
+          className={`object-cover ${project.comingSoon ? "opacity-60" : ""}`}
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
       </div>
       <div className="p-6">
         <div className="flex items-center gap-3">

@@ -41,7 +41,7 @@ export const projects: Project[] = [
     slug: "roads-quality",
     description:
       "Data aggregation platform for analyzing road quality across Ukrainian oblast capitals. Interactive maps, city comparisons, contractor rankings, and 8 integrated data sources.",
-    screenshot: "/screenshots/roads-quality.svg",
+    screenshot: "/screenshots/roads-quality.png",
     techStack: ["React", "FastAPI", "PostGIS", "Celery"],
     comingSoon: true,
   },
@@ -50,7 +50,7 @@ export const projects: Project[] = [
     slug: "smm-desk",
     description:
       "AI-powered social media management platform. Draft, generate, and optimize content across X, LinkedIn, Facebook, Telegram, and more with dual LLM support and trend intelligence.",
-    screenshot: "/screenshots/smm-desk.svg",
+    screenshot: "/screenshots/smm-desk.png",
     techStack: ["Angular", "NestJS", "Claude API", "Gemini"],
     comingSoon: true,
   },
@@ -59,7 +59,7 @@ export const projects: Project[] = [
     slug: "inv-desk",
     description:
       "Personal investment analysis tool with AI-powered research, tax optimization insights, and leverage analysis for building and managing investment portfolios.",
-    screenshot: "/screenshots/inv-desk.svg",
+    screenshot: "/screenshots/inv-desk.png",
     techStack: ["React", "Express", "SQLite", "Claude API"],
     comingSoon: true,
   },
