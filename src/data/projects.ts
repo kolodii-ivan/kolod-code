@@ -14,7 +14,7 @@ export const projects: Project[] = [
     description:
       "Real-time air quality monitoring dashboard. Track pollution levels, view historical data, and get health recommendations based on current conditions.",
     url: "https://air.kolodii.com/",
-    screenshot: "/screenshots/air-quality.png",
+    screenshot: "/screenshots/air-quality.svg",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS"],
   },
   {
@@ -23,7 +23,7 @@ export const projects: Project[] = [
     description:
       "A personal assistant web application designed to streamline daily workflows and task management with an intuitive interface.",
     url: "https://yana.ikolodiy.com/",
-    screenshot: "/screenshots/yana.png",
+    screenshot: "/screenshots/yana.svg",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS"],
   },
   {
@@ -32,7 +32,7 @@ export const projects: Project[] = [
     description:
       "Interactive land analysis and visualization tool. Explore geographic data, assess land properties, and generate detailed reports.",
     url: "https://land.ikolodiy.com/",
-    screenshot: "/screenshots/land-lab.png",
+    screenshot: "/screenshots/land-lab.svg",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS"],
   },
 ];
