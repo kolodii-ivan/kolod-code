@@ -15,7 +15,7 @@ export default function ProjectCard({ project }: { project: Project }) {
           src={project.screenshot}
           alt={`Screenshot of ${project.name}`}
           fill
-          className={`object-cover ${project.comingSoon ? "opacity-60" : ""}`}
+          className={`object-cover ${project.comingSoon ? "opacity-80" : ""}`}
           sizes="(max-width: 768px) 100vw, 50vw"
         />
       </div>
