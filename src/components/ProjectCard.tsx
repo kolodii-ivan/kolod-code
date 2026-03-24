@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { Project } from "@/data/projects";
 
-export default function ProjectCard({ project }: { project: Project }) {
+export default function ProjectCard({ project, priority = false }: { project: Project; priority?: boolean }) {
   return (
     <article
       className={`bg-white rounded-lg shadow-md overflow-hidden ${
         project.comingSoon
           ? "opacity-75"
-          : "transition-[transform,box-shadow] duration-200 hover:shadow-lg hover:-translate-y-1"
+          : "transition-transform duration-200 hover:-translate-y-1"
       }`}
     >
       <div className="relative aspect-video bg-charcoal/5">
@@ -17,6 +17,7 @@ export default function ProjectCard({ project }: { project: Project }) {
           fill
           className={`object-cover ${project.comingSoon ? "opacity-80" : ""}`}
           sizes="(max-width: 768px) 100vw, 50vw"
+          priority={priority}
         />
       </div>
       <div className="p-6">
