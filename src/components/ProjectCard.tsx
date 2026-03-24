@@ -10,16 +10,29 @@ export default function ProjectCard({ project, priority = false }: { project: Pr
           : "transition-transform duration-200 hover:-translate-y-1"
       }`}
     >
-      <div className="relative aspect-video bg-charcoal/5">
-        <Image
-          src={project.screenshot}
-          alt={`Screenshot of ${project.name}`}
-          fill
-          className={`object-cover ${project.comingSoon ? "opacity-90" : ""}`}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          priority={priority}
-        />
-      </div>
+      {project.url ? (
+        <a href={project.url} target="_blank" rel="noopener noreferrer" className="relative aspect-video bg-charcoal/5 block cursor-pointer">
+          <Image
+            src={project.screenshot}
+            alt={`Screenshot of ${project.name}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority={priority}
+          />
+        </a>
+      ) : (
+        <div className="relative aspect-video bg-charcoal/5">
+          <Image
+            src={project.screenshot}
+            alt={`Screenshot of ${project.name}`}
+            fill
+            className={`object-cover ${project.comingSoon ? "opacity-90" : ""}`}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority={priority}
+          />
+        </div>
+      )}
       <div className="p-6">
         <div className="flex items-center gap-3">
           <h3 className="font-mono text-xl font-semibold text-dark-text">
