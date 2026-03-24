@@ -15,7 +15,7 @@ export const projects: Project[] = [
     description:
       "Real estate land search aggregator for the Ivano-Frankivsk region. Combines listings from OLX, DIM.RIA, LUN, and Telegram into an interactive map with filters by price, area, and land type.",
     url: "https://land.ikolodiy.com/",
-    screenshot: "/screenshots/land-lab.png",
+    screenshot: "/screenshots/land-lab.jpg",
     techStack: ["Next.js", "Supabase", "Leaflet", "Cheerio"],
   },
   {
@@ -41,7 +41,7 @@ export const projects: Project[] = [
     slug: "roads-quality",
     description:
       "Data aggregation platform for analyzing road quality across Ukrainian oblast capitals. Interactive maps, city comparisons, contractor rankings, and 8 integrated data sources.",
-    screenshot: "/screenshots/roads-quality.png",
+    screenshot: "/screenshots/roads-quality.jpg",
     techStack: ["React", "FastAPI", "PostGIS", "Celery"],
     comingSoon: true,
   },

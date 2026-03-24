@@ -4,10 +4,10 @@ import { Project } from "@/data/projects";
 export default function ProjectCard({ project }: { project: Project }) {
   return (
     <article
-      className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 ${
+      className={`bg-white rounded-lg shadow-md overflow-hidden ${
         project.comingSoon
           ? "opacity-75"
-          : "hover:shadow-lg hover:-translate-y-1"
+          : "transition-[transform,box-shadow] duration-200 hover:shadow-lg hover:-translate-y-1"
       }`}
     >
       <div className="relative aspect-video bg-charcoal/5">
