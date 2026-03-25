@@ -23,7 +23,7 @@ export const projects: Project[] = [
     slug: "air-quality",
     description:
       "Personalized air quality and allergy risk tracker. Set up your allergen profile, monitor multiple locations, and get pollen forecasts tailored to your sensitivities.",
-    url: "https://air.kolodii.com/",
+    url: "https://air.ikolodiy.com/",
     screenshot: "/screenshots/air-quality.png",
     techStack: ["Next.js", "TypeScript", "Tailwind CSS"],
   },
