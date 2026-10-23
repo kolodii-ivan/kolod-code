@@ -2,25 +2,33 @@
   "name": "kolod-code",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "wrangler dev",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "cf:check": "wrangler versions upload --dry-run",
+    "cf:preview": "npm run build && wrangler dev",
+    "lint:workflows": "actionlint -ignore 'unexpected key \"queue\" for \"concurrency\" section' && ruby -ryaml -e 'Dir[\".github/workflows/*.yml\"].each { |f| YAML.load_file(f) }'"
   },
   "dependencies": {
-    "next": "16.2.1",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "next": "16.4.2",
+    "react": "19.2.9",
+    "react-dom": "19.2.9"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5",
+    "wrangler": "4.152.0"
   }
 }

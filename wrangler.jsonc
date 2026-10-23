@@ -1,0 +1,26 @@
+// code.ikolodiy.com on Cloudflare Workers: a static-assets Worker (no server code).
+// The app is a pure static export (next.config.ts `output: "export"`): `npm run build`
+// writes the site to ./out, and this Worker serves that directory.
+// Releases: CI uploads a version with `wrangler versions upload` and promotes it
+// with `wrangler versions deploy` once every check is green (.github/workflows/ci.yml).
+// Local preview: `npm run cf:preview` (build + `wrangler dev`).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kolod-code",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    // Next's static export; unknown paths get the exported 404.html with a 404 status.
+    "directory": "./out",
+    "not_found_handling": "404-page",
+  },
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": { "enabled": true },
+  // Cutover: attach the custom domain only after the first promoted deploy has been
+  // smoke-tested on the workers.dev URL and the Vercel project is ready to be retired.
+  // Uncommenting this makes the next promoted version take over code.ikolodiy.com
+  // (the deploy job runs `wrangler triggers deploy`; Cloudflare creates the DNS record
+  // when the custom domain is added, so an existing record for the exact hostname must
+  // be removed first).
+  // "routes": [{ "pattern": "code.ikolodiy.com", "custom_domain": true }]
+}

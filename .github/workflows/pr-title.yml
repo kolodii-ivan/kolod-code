@@ -1,0 +1,27 @@
+name: PR title
+# Separate from CI so that renaming a PR re-runs only this check.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+permissions: {}
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  # Squash merges use the PR title as the commit title, so it must follow the commit format
+  # (~/.claude/rules/git-workflow.md): `type: Message | GH-1 #time 30m`. The match runs in perl
+  # (no `grep -P` dependency).
+  pr-title:
+    name: Check PR title
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          TITLE: ${{ github.event.pull_request.title }}
+        shell: bash
+        run: |
+          export PATTERN="^((feature|fix|reformat|docs|refactor|performance|test|misc|wip|build|release|merge|style):(\s\b([A-Z])+([A-Za-z0-9.,+!@#\$%^&*_';\-\(\)]+\s)+)\|\s(|LP|DEVTECH|TA|APP|MOB|GH)-(\d*)?\s#(time|comment)|Merge )"
+          if ! perl -e 'exit(($ENV{TITLE} // "") =~ /$ENV{PATTERN}/ ? 0 : 1)'; then
+            echo "::error::PR title must look like 'feature: Added something | GH-123 #time 30m', got: ${TITLE}"
+            exit 1
+          fi

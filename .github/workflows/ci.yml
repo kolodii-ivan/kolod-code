@@ -1,0 +1,219 @@
+name: CI
+# Pull requests run the checks and the static-export build. A push to main (or a manual run) also builds and
+# uploads a kolod-code Worker version in parallel with the checks (`prepare`, no traffic) and promotes exactly that
+# version once every check for the same SHA is green (`deploy`). A manual run on another branch uploads without
+# promoting (to test the pipeline). The release jobs need the repository variable DEPLOY_ENABLED=true and the
+# `production` environment secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID); until those exist only the checks
+# run. The PR title is checked in pr-title.yml.
+# This repository is public: every job runs on GitHub-hosted ubuntu-latest (never a self-hosted runner), and the
+# Cloudflare secrets reach only the release jobs, which never run for pull requests.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      promote:
+        description: Promote the uploaded version after the checks pass (main only)
+        type: boolean
+        default: true
+      simulate_smoke_failure:
+        description: Fail the smoke test after the real checks to rehearse the automatic rollback
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+jobs:
+  checks:
+    name: Checks
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Workflow lint
+        run: |
+          docker run --rm -v "${PWD}:/repo" --workdir /repo rhysd/actionlint:1.7.12 -color \
+            -ignore 'unexpected key "queue" for "concurrency" section'
+          ruby -ryaml -e 'Dir[".github/workflows/*.yml"].each { |f| YAML.load_file(f) }'
+  build:
+    name: Build (static export)
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      # Keyed per commit; a new commit starts from the newest cache of the same lockfile. `prepare` restores it.
+      - uses: actions/cache/restore@v6
+        with:
+          path: .next/cache
+          key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+      - run: npm run build
+      - name: Validate the Worker config (nothing uploaded)
+        run: npm run cf:check
+      - uses: actions/cache/save@v6
+        with:
+          path: .next/cache
+          key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+  # Builds and uploads a version that receives no traffic, in parallel with the checks; a failed check leaves it
+  # unpromoted. The Cloudflare secrets reach only the upload step. The first release on main of a Worker that does
+  # not exist yet creates it with one `wrangler deploy` of the same build first (versions upload needs an existing
+  # Worker); after that the release still uploads and promotes a version as usual.
+  prepare:
+    name: Prepare release
+    timeout-minutes: 15
+    if: vars.DEPLOY_ENABLED == 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      deployment: false
+    outputs:
+      version_id: ${{ steps.upload.outputs.version_id }}
+    steps:
+      - uses: actions/checkout@v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - uses: actions/cache/restore@v6
+        with:
+          path: .next/cache
+          key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+      - run: npm run build
+      - name: Stamp the release
+        # The smoke test reads this back after the promotion (release == SHA).
+        run: printf '%s' "${GITHUB_SHA}" > out/release.txt
+      - name: Upload kolod-code version (no traffic)
+        id: upload
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # `wrangler versions upload` refuses a Worker that does not exist yet, so the very first release on main
+          # creates it with a one-time `wrangler deploy` of this same build (same tag, message and release.txt). On
+          # the Cloudflare API a missing Worker is error 10007 (10090 for a legacy environment); any other failure of
+          # the check stops the release instead of deploying blindly.
+          check_file="${RUNNER_TEMP}/wrangler-check.ndjson"
+          check_log="${RUNNER_TEMP}/wrangler-check.log"
+          if ! WRANGLER_OUTPUT_FILE_PATH="${check_file}" npx wrangler deployments list --json > /dev/null 2> "${check_log}"; then
+            # shellcheck disable=SC2016 # the node script is literal on purpose
+            error_code="$(node -e 'const fs = require("fs"); const f = process.argv[1]; const lines = fs.existsSync(f) ? fs.readFileSync(f, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : []; const e = lines.find((l) => l.type === "command-failed"); process.stdout.write(String(e?.code ?? ""));' "${check_file}")"
+            if [ "${error_code}" != "10007" ] && [ "${error_code}" != "10090" ]; then
+              cat "${check_log}" >&2
+              echo "::error::Could not check whether kolod-code exists (wrangler deployments list failed, code: ${error_code:-none})"
+              exit 1
+            fi
+            if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+              echo "::error::kolod-code does not exist yet; the first release must run on main"
+              exit 1
+            fi
+            echo "::notice::kolod-code does not exist yet; creating it with a one-time wrangler deploy of ${GITHUB_SHA::7}"
+            npx wrangler deploy --tag "${GITHUB_SHA::7}" --message "${GITHUB_SHA}"
+            echo "Created kolod-code with a first \`wrangler deploy\` of ${GITHUB_SHA::7} (live on workers.dev before the checks finished; the version below is promoted as usual)" >> "${GITHUB_STEP_SUMMARY}"
+          fi
+          output_file="${RUNNER_TEMP}/wrangler-output.ndjson"
+          WRANGLER_OUTPUT_FILE_PATH="${output_file}" npx wrangler versions upload \
+            --tag "${GITHUB_SHA::7}" --message "${GITHUB_SHA}"
+          # shellcheck disable=SC2016 # the node script is literal on purpose
+          version_id="$(node -e 'const lines = require("fs").readFileSync(process.argv[1], "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)); const v = lines.find((l) => l.type === "version-upload"); process.stdout.write(v?.version_id ?? "");' "${output_file}")"
+          if ! [[ "${version_id}" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+            echo "::error::wrangler versions upload did not report a version id"
+            exit 1
+          fi
+          echo "version_id=${version_id}" >> "${GITHUB_OUTPUT}"
+          echo "Uploaded kolod-code version \`${version_id}\` for ${GITHUB_SHA::7} (no traffic yet)" >> "${GITHUB_STEP_SUMMARY}"
+  # Promotes the version from `prepare` only when every check for the same commit is green, and only on main.
+  deploy:
+    name: Deploy production
+    timeout-minutes: 15
+    needs: [checks, build, prepare]
+    if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.promote)
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SMOKE_URL }}
+    # Promotions never cancel each other and wait in order; the guard below skips a commit main has moved past.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+      queue: max
+    steps:
+      # fetch-depth 0 brings origin/main as of the moment this queued job starts; no credentials stay on disk.
+      - uses: actions/checkout@v7
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: Promote, smoke-test, roll back on failure
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VERSION_ID: ${{ needs.prepare.outputs.version_id }}
+          SMOKE_URL: ${{ vars.SMOKE_URL }}
+          SIMULATE_SMOKE_FAILURE: ${{ inputs.simulate_smoke_failure && 'true' || 'false' }}
+        run: |
+          # Never promote an older commit over a newer one: the newer commit's own run promotes main's tip.
+          tip="$(git rev-parse origin/main)"
+          if [ "${tip}" != "${GITHUB_SHA}" ]; then
+            echo "::notice::Not promoted: origin/main is at ${tip:0:7}, not ${GITHUB_SHA::7}; the newer commit's run promotes it"
+            exit 0
+          fi
+          # Remember the active version specs ("id@pct% ..."), to roll back to when the smoke test fails.
+          previous_specs=""
+          if status_json="$(npx wrangler deployments status --json 2> /dev/null)"; then
+            # shellcheck disable=SC2016 # the node script is literal on purpose
+            previous_specs="$(printf '%s' "${status_json}" | node -e 'let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => { const j = JSON.parse(s.slice(s.search(/^[{[]/m))); const v = (Array.isArray(j) ? j[0] : j).versions ?? []; process.stdout.write(v.map((x) => `${x.version_id}@${x.percentage}%`).join(" ")); });' 2> /dev/null || true)"
+          fi
+          npx wrangler versions deploy "${VERSION_ID}@100%" --yes
+          # versions deploy switches code only; routes and custom domains are applied by triggers deploy.
+          # triggers deploy validates the whole config, so the assets directory must exist even though routes do not use it.
+          mkdir -p out
+          npx wrangler triggers deploy
+          if [ -z "${SMOKE_URL}" ]; then
+            echo "::notice::SMOKE_URL is not set; skipping the smoke test (set it to the workers.dev URL after the first deploy)"
+            exit 0
+          fi
+          # Smoke test: the promoted release must report this SHA and serve the home page and the sitemap.
+          base="${SMOKE_URL%/}"
+          live=""
+          for _ in $(seq 1 24); do
+            live="$(curl -fsS --max-time 10 "${base}/release.txt" 2> /dev/null || true)"
+            if [ "${live}" = "${GITHUB_SHA}" ]; then break; fi
+            sleep 5
+          done
+          home_code="$(curl -s -o /dev/null --max-time 10 -w '%{http_code}' "${base}/")"
+          sitemap_code="$(curl -s -o /dev/null --max-time 10 -w '%{http_code}' "${base}/sitemap.xml")"
+          failure=""
+          if [ "${live}" != "${GITHUB_SHA}" ] || [ "${home_code}" != "200" ] || [ "${sitemap_code}" != "200" ]; then
+            failure="release: ${live:-unreadable}, /: ${home_code}, /sitemap.xml: ${sitemap_code}"
+          elif [ "${SIMULATE_SMOKE_FAILURE}" = "true" ]; then
+            failure="simulated failure (simulate_smoke_failure input) after the real checks passed"
+          fi
+          if [ -z "${failure}" ]; then
+            echo "Promoted kolod-code version \`${VERSION_ID}\` for ${GITHUB_SHA::7}: release.txt matches, / and /sitemap.xml are 200" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+          echo "::error::Smoke test failed (${failure}); rolling back"
+          if [ -n "${previous_specs}" ]; then
+            # shellcheck disable=SC2086 # previous_specs is a list of version specs on purpose
+            npx wrangler versions deploy ${previous_specs} --yes
+            echo "Rolled back to ${previous_specs} after a failed smoke test (${failure})" >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "::error::No previous version to roll back to"
+          fi
+          exit 1
