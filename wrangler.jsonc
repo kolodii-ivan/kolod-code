@@ -16,11 +16,7 @@
   "workers_dev": true,
   "preview_urls": true,
   "observability": { "enabled": true },
-  // Cutover: attach the custom domain only after the first promoted deploy has been
-  // smoke-tested on the workers.dev URL and the Vercel project is ready to be retired.
-  // Uncommenting this makes the next promoted version take over code.ikolodiy.com
-  // (the deploy job runs `wrangler triggers deploy`; Cloudflare creates the DNS record
-  // when the custom domain is added, so an existing record for the exact hostname must
-  // be removed first).
-  // "routes": [{ "pattern": "code.ikolodiy.com", "custom_domain": true }]
+  // The custom domain creates its own DNS record and certificate; a zone record for the same
+  // exact hostname must not exist (the zone's wildcard does not conflict).
+  "routes": [{ "pattern": "code.ikolodiy.com", "custom_domain": true }]
 }
