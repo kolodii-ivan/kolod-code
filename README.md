@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kolod Code
 
-## Getting Started
+Portfolio of web apps built with Claude Code: https://code.ikolodiy.com
 
-First, run the development server:
+A Next.js static export (`output: "export"`) served by the `kolod-code` Cloudflare Worker
+(static assets only, no server code; see `wrangler.jsonc`).
+
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npm run dev          # Next dev server on http://localhost:3000
+npm run lint
+npm run typecheck
+npm run build        # static export into ./out
+npm run cf:check     # validate the Worker config and bundle (nothing uploaded)
+npm run cf:preview   # build + wrangler dev on http://localhost:8787
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Releases
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`.github/workflows/ci.yml` runs the checks on every pull request. A push to `main` builds the export,
+stamps `out/release.txt` with the commit SHA and uploads a Worker version that receives no traffic
+(`wrangler versions upload`) in parallel with the checks; once every check for the same SHA is green the
+deploy job promotes exactly that version (`wrangler versions deploy`), applies routes
+(`wrangler triggers deploy`), smoke-tests it and rolls back automatically on failure.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The release jobs are armed by the repository variable `DEPLOY_ENABLED=true` and need, in the
+`production` environment, the secrets `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit, plus Zone: Workers
+Routes: Edit and DNS: Edit for the custom domain) and `CLOUDFLARE_ACCOUNT_ID`. The repository variable
+`SMOKE_URL` points the smoke test at the live site (the workers.dev URL first, then
+https://code.ikolodiy.com). A manual run with `simulate_smoke_failure` rehearses the automatic rollback.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Rollback by hand: `npx wrangler deployments list`, then `npx wrangler versions deploy <version-id>@100%`.
