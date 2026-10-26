@@ -92,7 +92,11 @@ jobs:
           path: .next/cache
           key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
           restore-keys: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
-      - run: npm run build
+      - name: Release build
+        # Google Analytics (src/components/GoogleAnalytics.tsx) loads only in this build, never in PR or local builds.
+        env:
+          NEXT_PUBLIC_DEPLOY_ENV: production
+        run: npm run build
       - name: Stamp the release
         # The smoke test reads this back after the promotion (release == SHA).
         run: printf '%s' "${GITHUB_SHA}" > out/release.txt
