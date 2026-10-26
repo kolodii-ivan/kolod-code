@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -46,6 +47,7 @@ export default function RootLayout({
         className={`${jetbrainsMono.variable} ${inter.variable} font-sans antialiased`}
       >
         {children}
+        <GoogleAnalytics />
       </body>
     </html>
   );
