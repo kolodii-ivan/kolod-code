@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
@@ -13,6 +13,18 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+// Share image: public/og/home.png, rendered by scripts/brand/render.mjs (re-run it after changing the copy).
+const shareImage = {
+  url: "/og/home.png",
+  width: 1200,
+  height: 630,
+  alt: "Kolod Code — web applications crafted with Claude Code",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1A1A1A",
+};
+
 export const metadata: Metadata = {
   title: "Kolod Code — Web Apps Built with Claude Code",
   description:
@@ -26,12 +38,15 @@ export const metadata: Metadata = {
     url: "https://code.ikolodiy.com",
     siteName: "Kolod Code",
     type: "website",
+    locale: "en_US",
+    images: [shareImage],
   },
   twitter: {
     card: "summary_large_image",
     title: "Kolod Code — Web Apps Built with Claude Code",
     description:
       "Portfolio of web applications crafted with Claude Code by Ivan Kolodii.",
+    images: [shareImage],
   },
   robots: { index: true, follow: true },
 };
