@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- Share image of code.ikolodiy.com (1200x630), rendered by render.mjs. Mirrors the hero: charcoal, dot grid,
+     green glow, the "Kolod Code_" wordmark in JetBrains Mono and the "$ explore --projects" prompt. -->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;700&display=block" rel="stylesheet">
+<style>
+  :root { --charcoal: #1A1A1A; --light: #E5E5E5; --clay: #D4A574; --green: #4ADE80; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    position: relative; background: var(--charcoal); color: var(--light);
+    font-family: 'Inter', sans-serif; display: flex; flex-direction: column; justify-content: center; padding: 0 96px;
+  }
+  .dots { position: absolute; inset: 0; opacity: .07;
+    background-image: radial-gradient(circle, var(--light) 1.2px, transparent 1.2px); background-size: 32px 32px; }
+  .glow { position: absolute; left: 50%; top: 50%; width: 760px; height: 760px; transform: translate(-50%, -50%);
+    border-radius: 50%; background: rgba(74, 222, 128, .07); filter: blur(140px); }
+  .content { position: relative; }
+  .top { position: absolute; top: 56px; left: 96px; right: 96px; display: flex; align-items: center; justify-content: space-between; }
+  .site { display: flex; align-items: center; gap: 16px; font-family: 'JetBrains Mono', monospace; font-size: 24px; color: rgba(229,229,229,.6); }
+  .site img { width: 56px; height: 56px; }
+  .pill { display: inline-flex; align-items: center; gap: 12px; padding: 10px 22px; border-radius: 999px;
+    border: 1px solid rgba(229,229,229,.12); background: rgba(229,229,229,.05);
+    font-family: 'JetBrains Mono', monospace; font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: rgba(229,229,229,.5); }
+  .pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: rgba(74,222,128,.85); }
+  h1 { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 150px; line-height: 1; letter-spacing: -.03em; margin-top: 40px; }
+  .code { background: linear-gradient(90deg, var(--clay), var(--green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cursor { color: var(--green); margin-left: -.06em; }
+  .lead { margin-top: 36px; font-size: 36px; color: rgba(229,229,229,.55); }
+  .lead b { font-weight: 500; color: rgba(229,229,229,.88); }
+  .prompt { position: absolute; bottom: 56px; left: 96px; font-family: 'JetBrains Mono', monospace; font-size: 24px; color: rgba(229,229,229,.6); }
+  .prompt .g { color: var(--green); } .prompt .d { color: rgba(229,229,229,.28); }
+</style>
+</head>
+<body>
+  <div class="dots"></div>
+  <div class="glow"></div>
+  <div class="top">
+    <div class="site"><img src="../../src/app/icon.svg" alt="">code.ikolodiy.com</div>
+  </div>
+  <div class="content">
+    <span class="pill">Portfolio</span>
+    <h1>Kolod <span class="code">Code</span><span class="cursor">_</span></h1>
+    <p class="lead">Web applications crafted with <b>Claude Code</b></p>
+  </div>
+  <div class="prompt"><span class="g">$</span> explore <span class="d">--projects</span></div>
+</body>
+</html>
