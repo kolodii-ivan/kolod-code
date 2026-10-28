@@ -67,6 +67,34 @@ jobs:
         with:
           path: .next/cache
           key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+  e2e:
+    name: E2E (Playwright)
+    timeout-minutes: 15
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@v7
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/Library/Caches/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npx playwright install chromium
+      - if: runner.os == 'Linux'
+        run: npx playwright install-deps chromium
+      - run: npm run build
+      - run: npm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
   # Builds and uploads a version that receives no traffic, in parallel with the checks; a failed check leaves it
   # unpromoted. The Cloudflare secrets reach only the upload step. The first release on main of a Worker that does
   # not exist yet creates it with one `wrangler deploy` of the same build first (versions upload needs an existing
@@ -144,7 +172,7 @@ jobs:
   deploy:
     name: Deploy production
     timeout-minutes: 15
-    needs: [checks, build, prepare]
+    needs: [checks, build, e2e, prepare]
     if: vars.DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.promote)
     runs-on: ubuntu-latest
     environment:

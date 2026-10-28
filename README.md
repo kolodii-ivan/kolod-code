@@ -15,6 +15,7 @@ npm run typecheck
 npm run build        # static export into ./out
 npm run cf:check     # validate the Worker config and bundle (nothing uploaded)
 npm run cf:preview   # build + wrangler dev on http://localhost:8787
+npm run test:e2e     # Playwright (desktop + mobile) against a local wrangler dev of the export; E2E_BASE_URL=<url> targets a deployed host, E2E_SCREENSHOTS=<dir> saves full-page screenshots
 ```
 
 ## Releases
