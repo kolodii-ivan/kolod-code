@@ -28,3 +28,13 @@ test("crawler files are served", async ({ request }) => {
     expect(response.status(), file).toBe(200);
   }
 });
+
+test("home page links to itself and publishes Organization structured data", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Kolod Code home" })).toHaveAttribute("href", "/");
+
+  const jsonLd = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent()) ?? "{}");
+  const organization = jsonLd["@graph"].find((node: { "@type": string }) => node["@type"] === "Organization");
+  expect(organization).toMatchObject({ name: "Kolod Code", url: "https://code.ikolodiy.com" });
+  expect(organization.logo.url).toBe("https://code.ikolodiy.com/icons/icon-512.png");
+});
