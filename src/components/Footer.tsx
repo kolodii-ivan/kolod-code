@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="relative bg-charcoal py-20 px-6 overflow-hidden">
@@ -12,13 +14,17 @@ export default function Footer() {
       />
 
       <div className="relative z-10 max-w-3xl mx-auto text-center">
-        {/* Logo echo */}
-        <div className="font-mono text-2xl font-bold mb-6">
+        {/* Logo echo: links back to the home page so it has an internal link (not only the sitemap) */}
+        <Link
+          href="/"
+          aria-label="Kolod Code home"
+          className="inline-block font-mono text-2xl font-bold mb-6 hover:opacity-80 transition-opacity"
+        >
           <span className="text-light-text">Kolod</span>
           <span className="bg-gradient-to-r from-clay to-terminal-green bg-clip-text text-transparent">
             {" "}Code
           </span>
-        </div>
+        </Link>
 
         <p className="font-sans text-sm text-light-text/40 leading-relaxed max-w-md mx-auto">
           A portfolio of web applications built entirely with{" "}
